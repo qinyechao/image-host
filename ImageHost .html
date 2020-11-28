@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Personal Image Host</title>
+    <link rel="icon" href="http://blog.qinyechao.com/img/logo.svg">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.6.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+
+    <!-- custom style -->
+    <style>
+        body,
+        #app {
+            width: 100%;
+            height: 100%;
+            font-size: 1.2em !important;
+            background-color: #16A085;
+        }
+
+        .main-content {
+            width: 50%;
+            height: auto;
+            margin: 1% auto;
+        }
+
+        .header-nav {
+            width: 100%;
+            height: 80px;
+        }
+
+        .upload-box {
+            width: 100%;
+            height: 666px;
+            border: 1px solid #e7e7e7;
+            border-radius: 4px;
+            -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+            box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+            background-color: #FFFFFF;
+        }
+
+        .upload-header {
+            width: 100%;
+            height: 6%;
+            font-size: 1.3em;
+            line-height: 2.2em;
+            color: #333;
+            background-color: #f5f5f5;
+            border-color: #ddd;
+            border-bottom: 1px solid #e2dfdf;
+            padding-left: 15px;
+        }
+
+        .upload-body {
+            width: 100%;
+            height: 90%;
+            padding: 2%;
+        }
+
+        .upload-opt {
+            width: 100%;
+            height: 50%;
+            border: 3px dashed#A2A1A1;
+            border-radius: 4px;
+            background-color: #F5F5F5;
+        }
+
+        .upload-opt p {
+            display: inline-block;
+            margin: 12% auto;
+            width: 100%;
+        }
+
+        .upload-opt:hover {
+            border-color: #616161;
+            cursor: pointer;
+        }
+
+        .upload-btn {
+            width: 100%;
+            height: 10%;
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+        }
+
+        .upload-result {
+            width: 100%;
+            height: 25%;
+            margin-top: 20px;
+        }
+
+        .upload-result textarea {
+            width: 100%;
+        }
+
+        .file-row {
+            height: 15%;
+        }
+
+        .file-item {
+            margin: 10px;
+            padding: 10px;
+            border: 1px dashed #e2dfdf;
+            position: relative;
+        }
+
+        .edit-btn {
+            color: #FFFFFF;
+            font-size: 8px;
+            position: absolute;
+            z-index: 100;
+            right: 3%;
+            top: 1%;
+        }
+
+        .mask {
+            cursor: pointer;
+            background-color: #000;
+            border: none;
+            opacity: 0.6;
+            z-index: 10;
+        }
+
+        .img-box {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .img-box img {
+            max-width: 100%;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            top: 0;
+        }
+
+        .copy-link {
+            color: white;
+            width: 100%;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        .full-with {
+            width: 100%;
+        }
+
+        .full-height {
+            height: 100%;
+        }
+
+        .overflow-y {
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="main-content">
+            <!-- header -->
+            <div class="text-left" style="color: white;">
+                <img class="pull-left" style="width: 80px;" src="http://www.blog.qinyechao.com/img/logo.png" alt="IMG">
+                <h2 class="pull-left">图床-imgage hosting</h2>
+            </div>
+            <div class="header-nav" style="clear: left;">
+                <nav class="navbar navbar-default">
+                    <ul class="nav navbar-nav" style="width: 100%;">
+                        <li :class="{'active': selection === 'upload'}" @click="selection = 'upload'">
+                            <a href="#">上传</a>
+                        </li>
+                        <li :class="{'active': selection === 'fileList'}" @click="selection = 'fileList'">
+                            <a href="#">查看文件({{fileList.length}})</a></li>
+                        <li class="pull-right"><a href="http://www.blog.qinyechao.com" target="_blank">
+                                <i class="fa fa-link" aria-hidden="true"></i>
+                                <span>我的博客</span>
+                            </a></li>
+                    </ul>
+                </nav>
+            </div>
+            <!-- content -->
+            <!-- 表格 -->
+            <ul class="dropdown-menu" aria-labelledby="dp-menu">
+                <li><a href="#">Regular link</a></li>
+                <li class="disabled"><a href="#">Disabled link</a></li>
+                <li><a href="#">Another link</a></li>
+            </ul>
+            <div class="upload-box" v-if="selection === 'fileList'">
+                <div class="upload-header">图床-已上传列表</div>
+                <div class="upload-body overflow-y">
+                    <div class="row file-row">
+                        <div class="col-md-1 col-sm-8 col-lg-1 full-height file-item" v-for="(file, index) in fileList"
+                            @mouseenter="enter(file)" @mouseleave="leave(file)" :class="{'mask': file.showMask}">
+                            <i class="fa fa-times edit-btn" @click="deleteFile(file)"></i>
+                            <p class="copy-link" :data-clipboard-text="file.url" v-show="file.showMask">复制链接</p>
+                            <div class="full-with full-height img-box" v-show="!file.showMask">
+                                <img :src="file.url" alt="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 计数 -->
+                <div style="padding: 3px;float: right;">
+                    <p>
+                        <i class="fa fa-check-circle-o" aria-hidden="true"></i>
+                        共有文件<strong>{{fileList.length}}</strong>个
+                    </p>
+                </div>
+            </div>
+            <!-- 上传 -->
+            <div class="upload-box" v-if="selection === 'upload'">
+                <div class="upload-header">图床-表单直传</div>
+                <div class="upload-body">
+                    <div class="upload-opt" @click="selectFile()">
+                        <p class="text-center" v-if="!uploadQueue || uploadQueue.length == 0">
+                            <i class="fa fa-cloud-upload" aria-hidden="true"></i>
+                            <span>拖拽或选择您的图片到这里(ﾉﾟ▽ﾟ)ﾉ</span>
+                        </p>
+                        <p class="text-center" v-if="uploadQueue && uploadQueue.length > 0">
+                            <i class="fa fa-check-square" aria-hidden="true"></i>
+                            <span> 您选择了 <strong>{{uploadQueue.length}}</strong> 个文件(/≧▽≦)/~</span>
+                        </p>
+                    </div>
+                    <div class="upload-btn">
+                        <button class="btn btn-primary" @click="doUpload()">
+                            <i class="fa fa-cloud-upload" aria-hidden="true"></i>
+                            开始上传</button>
+                    </div>
+                    <div class="upload-result">
+                        <textarea v-model="showback" class="form-control" rows="10"></textarea>
+                    </div>
+                </div>
+            </div>
+            <!-- content end -->
+        </div>
+    </div>
+    <input type="file" id="originBtn" style="display: none;" accept="image/*" multiple>
+</body>
+<!-- import JavaScript -->
+<script src="https://cdn.staticfile.org/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.staticfile.org/vue/2.2.2/vue.min.js"></script>
+<script src="https://cdn.staticfile.org/layer/3.1.1/layer.min.js"></script>
+<script src="http://gosspublic.alicdn.com/aliyun-oss-sdk-4.4.4.min.js"></script>
+<script src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js"></script>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                ossClient: null,
+                ossProperties: {
+                    region: '<oss-cn-hangzhou>',
+                    accessKeyId: '<accessKeyId>',
+                    accessKeySecret: '<accessKeySecret>',
+                    bucket: '<bucketName>'
+                },
+                pageSize: 999,
+                fileList: [],
+                selection: 'upload',
+                uploadQueue: [],
+                showback: "",
+                ossPrefix: ""
+            }
+        },
+        methods: {
+            getClient: function () {
+                var pros = this.ossProperties;
+                return new OSS.Wrapper(pros);
+            },
+            listFile: function (max) {
+                var index = layer.load(1, {
+                    shade: [0.1, '#fff'] //0.1透明度的白色背景
+                });
+                var _this = this;
+                let client = this.getClient();
+                client.list({
+                    'max-keys': max
+                }).then(function (result) {
+                    if (result && result.objects) {
+                        _this.fileList = result.objects;
+                        _this.fileList.forEach(element => {
+                            element.showMask = false;
+                        });
+                    }
+                    layer.close(index);
+                }).catch(function (err) {
+                    alert(err);
+                });
+            },
+            selectFile: function () {
+                $("#originBtn").click();
+                this.uploadQueue = [];
+                this.showback = "";
+            },
+            doUpload: function () {
+                var _this = this;
+                var files = _this.uploadQueue;
+                if (!files || files.length <= 0) {
+                    layer.msg("请先选择要上传的文件！")
+                    return;
+                }
+                for (var i = 0; i < files.length; i++) {
+                    var item = files[i];
+                    _this.getClient().multipartUpload(_this.guid() + _this.ext(item.name), item, {}).then(function (res) {
+                        _this.showback += _this.ossPrefix + res.name + '\n';
+                        _this.listFile(_this.pageSize);
+                    })
+                }
+            },
+            deleteFile: function (file) {
+                var _this = this;
+                layer.confirm('确定删除文件[' + file.name + ']吗？', {
+                    btn: ['确认', '取消'], title: "删除确认"
+                }, function () {
+                    _this.getClient().delete(file.name).then(function (e) {
+                        layer.closeAll();
+                        layer.msg("删除成功");
+                        _this.listFile(_this.pageSize);
+                    })
+                });
+            },
+            guid: function () {
+                var s = [];
+                var hexDigits = "0123456789abcdef";
+                for (var i = 0; i < 36; i++) {
+                    s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+                }
+                s[14] = "4";
+                s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);
+                s[8] = s[13] = s[18] = s[23] = "-";
+                var uuid = s.join("");
+                return uuid;
+            },
+            ext: function (fileName) {
+                //返回.ext
+                if (fileName && fileName.indexOf(".") > -1) {
+                    return fileName.substring(fileName.lastIndexOf("."));
+                } else {
+                    return ".unknown";
+                }
+            },
+            enter: function (file) {
+                file.showMask = true;
+                this.$forceUpdate()
+            },
+            leave: function (file) {
+                file.showMask = false;
+                this.$forceUpdate()
+            }
+        },
+        mounted() {
+            var _this = this;
+            _this.listFile(_this.pageSize);
+            _this.ossPrefix = "http://" + _this.ossProperties.bucket + "." + _this.ossProperties.region + ".aliyuncs.com/";
+            //上传文件监听
+            $("#originBtn").change(function () {
+                _this.uploadQueue = this.files;
+            })
+            //复制链接
+            var clipboard = new ClipboardJS('.copy-link');
+            clipboard.on('success', function (e) {
+                layer.msg('链接已复制，赶紧去粘贴吧~');
+            });
+
+        }
+    })
+
+</script>
+
+</html>
